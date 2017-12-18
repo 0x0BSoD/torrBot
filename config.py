@@ -6,6 +6,6 @@ downloadsDir = "Downloads dir"
 torrentsDir = "watch dir for transmission daemon"
 sensorsTarget = ["sensors"]
 # for transmission
-url = "http[s]://yot_ip:9091/transmission/rpc"
+url = "http[s]://yor_ip:9091/transmission/rpc"
 username = "username"
 password = "password"

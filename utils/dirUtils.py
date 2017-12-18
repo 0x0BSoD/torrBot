@@ -26,9 +26,14 @@ def getFolderItems():
 
 def fixRights():
     proc = subprocess.Popen(["chmod", "777", "-R", cfg.downloadsDir],
-                            stdout=subprocess.PIPE)
+                     stdout=subprocess.PIPE)
     out = proc.communicate()[0]
     result = out.decode()
-    return {"status": True,
-            "message": result
-            }
+    if proc.returncode == 0:
+        return {"status": True,
+                "message": "777 👍"
+                }
+    else:
+        return {"status": False,
+                "message": "Some Error, code {}".format(result)
+                }

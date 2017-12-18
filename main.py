@@ -4,7 +4,7 @@ import time
 
 from utils.logger import log
 from utils.router import parse
-from utils import strings as cs
+import interface.strings as cs
 from interface.keyboards import kbd
 import config as cfg
 
