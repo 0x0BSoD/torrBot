@@ -6,24 +6,19 @@ import math
 import interface.strings as cs
 import config as cfg
 
-
-def convert_size_storage(size_bytes):
+# untits: 's' - storage, 'n' - network
+def convert_size(size_bytes, units='s'):
    if size_bytes == 0:
        return "0B"
-   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+   if units == 's':
+       size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+   else:
+       size_name = ("Bps", "KBps", "MBps", "GBps")
    i = int(math.floor(math.log(size_bytes, 1024)))
    p = math.pow(1024, i)
    s = round(size_bytes / p, 2)
    return "{} {}".format(s, size_name[i])
 
-def convert_size_speed(size_bytes):
-   if size_bytes == 0:
-       return "0B"
-   size_name = ("Bps", "KBps", "MBps", "GBps")
-   i = int(math.floor(math.log(size_bytes, 1024)))
-   p = math.pow(1024, i)
-   s = round(size_bytes / p, 2)
-   return "{} {}".format(s, size_name[i])
 
 def messageConstr(status, message):
     return {'status': status, 'message': message}
@@ -87,8 +82,8 @@ def getStatus():
                                     dumped['torrentCount'],
                                     convert_size_speed(dumped['downloadSpeed']),
                                     convert_size_speed(dumped['uploadSpeed']),
-                                    convert_size_storage(dumped['cumulative-stats']['uploadedBytes']),
-                                    convert_size_storage(dumped['cumulative-stats']['downloadedBytes']))
+                                    convert_size(dumped['cumulative-stats']['uploadedBytes'], 'n'),
+                                    convert_size(dumped['cumulative-stats']['downloadedBytes'], 's'))
         return messageConstr(True, fStr)
     else:
         return messageConstr(False, 'Error on Getting Torrents')
