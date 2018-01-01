@@ -25,3 +25,26 @@ Upload Speed: {}
 Uploaded: {}
 Downloaded: {}
 """
+
+# TODO: Make menu (Start, Stop, Delete) on {3}
+getLastAct = """
+ID: {0}
+Name: {1}
+== * == * == * ==
+Status: {2}
+/Info_{0} | {3}
+-----------------
+"""
+
+getTorrInfo = """
+{0}
+Name: {1}
+Add Date: {8}
+Size: {7}
+⬇️ Downloading: {4} | ⬆️ Uploading: {5}
+Peers: {6}
+== * == * == * ==
+Status: {2}
+{3}
+-----------------
+"""

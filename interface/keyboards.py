@@ -20,8 +20,8 @@ class kbd:
         def handle_start(message):
             um = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True,
                                                    one_time_keyboard=False)
-            # um.row('Start All', 'Stop All')
-            um.row('Get Status')
+            um.row('Start All', 'Stop All')
+            um.row('Get Status', 'Recently Active')
             um.row('/back')
             bot.send_message(message.from_user.id,
                              cs.helloText,
