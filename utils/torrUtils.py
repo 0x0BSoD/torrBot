@@ -7,7 +7,8 @@ import datetime
 import interface.strings as cs
 import config as cfg
 EPOCH = datetime.datetime.fromtimestamp(0)
-
+STARTED = "/Stop_{0} | /Delete_{0}"
+STOPED = "/Start_{0} | /Delete_{0}"
 
 def timedelta_to_seconds(delta):
     seconds = (delta.microseconds * 1e6) + delta.seconds + (delta.days * 86400)
@@ -114,6 +115,17 @@ def startAll():
         return messageConstr(False, 'Error on Getting Torrents')
 
 
+def startById(id):
+    method = {'method': 'torrent-start', 'arguments': {
+        'ids': int(id)
+    }}
+    result = constructor(method)
+    if result:
+        return messageConstr(True, 'Started')
+    else:
+        return messageConstr(False, 'Error on Getting Torrents')
+
+
 def stopAll():
     method = {'method': 'torrent-stop', 'arguments': {}}
     result = constructor(method)
@@ -123,6 +135,29 @@ def stopAll():
         return messageConstr(False, 'Error on Getting Torrents')
 
 
+def stopById(id):
+    method = {'method': 'torrent-stop', 'arguments': {
+        'ids': int(id)
+    }}
+    result = constructor(method)
+    if result:
+        return messageConstr(True, 'Stoped')
+    else:
+        return messageConstr(False, 'Error on Getting Torrents')
+
+
+def deleteById(id):
+    method = {'method': 'torrent-remove', 'arguments': {
+        'ids': int(id)
+    }}
+    result = constructor(method)
+    if result:
+        return messageConstr(True, 'Deleted')
+    else:
+        return messageConstr(False, 'Error on Getting Torrents')
+
+
+# TODO: Check if i don't have a torrents
 def recentlyAct():
     method = {
                 'arguments': {
@@ -137,25 +172,33 @@ def recentlyAct():
         for i in tmp:
             if i['status'] == 0:
                 status = 'Torrent is stopped'
+                menu = STOPED
             elif i['status'] == 1:
                 status = 'Queued to check files'
+                menu = STARTED
             elif i['status'] == 2:
                 status = 'Checking files'
+                menu = STARTED
             elif i['status'] == 3:
                 status = 'Queued to download'
+                menu = STARTED
             elif i['status'] == 4:
                 status = 'Downloading'
+                menu = STARTED
             elif i['status'] == 5:
                 status = 'Queued to seed'
+                menu = STARTED
             elif i['status'] == 6:
                 status = 'Seeding'
-            ress += cs.getLastAct.format(i['id'], i['name'], status, ' ')
+                menu = STARTED
+            ress += cs.getLastAct.format(i['id'], i['name'], status, menu.format(i['id']))
         return messageConstr(True, ress)
     else:
         return messageConstr(False, 'Error on Getting Torrents')
 
 
 def torrInfo(id):
+    print(id)
     method = {
                 'arguments': {
                     'fields': ['id', 'name', 'status',
@@ -171,25 +214,32 @@ def torrInfo(id):
         if tmp['status'] == 0:
             icon = '⏹️'
             status = 'Torrent is stopped'
+            menu = STOPED
         elif tmp['status'] == 1:
             icon = '⏯️'
             status = 'Queued to check files'
+            menu = STARTED
         elif tmp['status'] == 2:
             icon = '▶️'
             status = 'Checking files'
+            menu = STARTED
         elif tmp['status'] == 3:
             icon = '⏯️'
             status = 'Queued to download'
+            menu = STARTED
         elif tmp['status'] == 4:
             icon = '▶️'
             status = 'Downloading'
+            menu = STARTED
         elif tmp['status'] == 5:
             icon = '⏯️'
             status = 'Queued to seed'
+            menu = STARTED
         elif tmp['status'] == 6:
             icon = '▶️'
             status = 'Seeding'
-        ress = cs.getTorrInfo.format(icon, tmp['name'], status, 'menu',
+            menu = STARTED
+        ress = cs.getTorrInfo.format(icon, tmp['name'], status, menu.format(tmp['id']),
                                      convert_size(tmp['rateDownload'], 'n'),
                                      convert_size(tmp['rateUpload'], 'n'),
                                      len(tmp['peers']),

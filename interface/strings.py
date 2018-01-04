@@ -26,7 +26,6 @@ Uploaded: {}
 Downloaded: {}
 """
 
-# TODO: Make menu (Start, Stop, Delete) on {3}
 getLastAct = """
 ID: {0}
 Name: {1}

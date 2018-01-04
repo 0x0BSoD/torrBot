@@ -1,6 +1,15 @@
-from utils.torrUtils import addByMagnetlink, getStatus, startAll, stopAll, recentlyAct, torrInfo
+from utils.torrUtils import addByMagnetlink, getStatus, startAll, stopAll, recentlyAct, torrInfo, startById, stopById, deleteById
 from utils.dirUtils import getFolderItems, fixRights
 from utils.serverStatus import sysHealth, discFree
+
+
+def parseId(data):
+    try:
+        id = data.split('_')[1]
+        return id
+    except Exception as e:
+        return {"status": False,
+                "message": "Wrong ID"}
 
 
 def parse(message):
@@ -23,12 +32,13 @@ def parse(message):
     elif message.startswith('Recently Active'):
         return recentlyAct()
     elif 'Info_' in message:
-        try:
-            id = message.split('_')
-            return torrInfo(id[1])
-        except Exception as e:
-            return {"status": False,
-                    "message": "Wrong ID"}
+        return torrInfo(parseId(message))
+    elif 'Stop_' in message:
+        return stopById(parseId(message))
+    elif 'Start_' in message:
+        return startById(parseId(message))
+    elif 'Delete_' in message:
+        return deleteById(parseId(message))
     else:
         return {"status": True,
                 "message": "Don't get it (~ ~)"}
