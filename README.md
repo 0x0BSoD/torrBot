@@ -1,7 +1,7 @@
 # torrBot
 Telegram Bot based on [pyTelegramBotAPI](https://github.com/eternnoir/pyTelegramBotAPI)
 
-> Work with Python 3.6 and never 
+> Work with Python 3.6 and newer 
 
 Functions:
   - Add torrent as a magnet link
