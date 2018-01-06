@@ -2,20 +2,20 @@ import config as cfg
 
 helpText = """
 == * == * == Torrents ☠
-/show_downladed - Showd Downloaded file in {0}
-/start_all_downlads - ▶️
-/stop_all_downlads - 💤
+/show_downloaded - Show Downloaded file in {0}
+/start_all_downloads - ▶️
+/stop_all_downloads - 💤
 == * == * == Server Health ☣️
 /get_cpu_t - Show CPU cores temperature
 /dfH - Show free space on drive
 """.format(cfg.downloadsDir)
 
-helloText = "Load torrent file or insert magent link to start downloading! ☠"
+helloText = "Load torrent file or insert magnet link to start downloading! ☠"
 
 ok = "✅ Added: {} \n Tracker[s]: {}"
 
 statusText = """
-Actve Torrents: {}
+Active Torrents: {}
 Paused Torrents: {}
 Torrents Count: {}
 == * == * == * ==
@@ -47,3 +47,6 @@ Status: {2}
 {3}
 -----------------
 """
+
+start = "/Stop_{0} | /Delete_{0}"
+stop = "/Start_{0} | /Delete_{0}"

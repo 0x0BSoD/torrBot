@@ -5,16 +5,16 @@ import time
 from utils.logger import log
 from utils.router import parse
 import interface.strings as cs
-from interface.keyboards import kbd
+from interface.keyboards import server_kbd, torr_kbd
 import config as cfg
 
 bot = telebot.TeleBot(cfg.token)
 print(bot.get_me())
 errVideo = open('./media/error.mp4', 'rb')
 
-# Keyboarads
-kbd.torrKbd(bot)
-kbd.serverKbd(bot)
+# Keyboards
+torr_kbd(bot)
+server_kbd(bot)
 
 
 @bot.message_handler(commands=['help'])
@@ -28,7 +28,7 @@ def echo_all(message):
     bot.send_chat_action(message.chat.id, 'upload_document')
     reply = parse(message.text)
     if not reply['status']:
-        log(message, 'Errored!')
+        log(message, 'Error!')
         bot.send_message(message.chat.id, reply['message'])
         bot.send_video(message.chat.id, errVideo)
     else:
@@ -46,19 +46,19 @@ def echo_all(message):
             f_id = message.document.file_id
             file_info = bot.get_file(f_id)
             downloaded_file = bot.download_file(file_info.file_path)
-            path = '{}/{}.torrent'.format(cfg.torrentsDir, f_id)
+            path = f'{cfg.torrentsDir}/{f_id}.torrent'
             with open(path, 'wb') as new_file:
                 new_file.write(downloaded_file)
             log(message, 'Added!')
-            bot.send_message(message.chat.id, "{} == Added!".format(name))
+            bot.send_message(message.chat.id, f'{name} == Added!')
         else:
-            log(message, 'Errored!')
+            log(message, 'Error!')
             bot.send_message(message.chat.id, 'It\'s not torrent file!')
             bot.send_video(message.chat.id, errVideo)
     except Exception as e:
-            log(message, 'Errored!')
+            log(message, 'Error!')
             bot.send_message(message.chat.id,
-                             'Some Fucking Error ( ⚆ _ ⚆ ) {}'.format(e),
+                             'Some Error ( ⚆ _ ⚆ ) {}'.format(e),
                              parse_mode="html")
             bot.send_video(message.chat.id, errVideo)
 

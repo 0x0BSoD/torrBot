@@ -3,12 +3,14 @@ from json import loads, dumps
 from requests import get, post
 import math
 import datetime
+import sys
 
 import interface.strings as cs
 import config as cfg
-EPOCH = datetime.datetime.fromtimestamp(0)
-STARTED = "/Stop_{0} | /Delete_{0}"
-STOPED = "/Start_{0} | /Delete_{0}"
+
+# python 3.6 not accept 0 as argument in fromtimestamp on Windows
+EPOCH = datetime.datetime.utcfromtimestamp(0) if sys.platform == 'win32' else datetime.datetime.fromtimestamp(0)
+
 
 def timedelta_to_seconds(delta):
     seconds = (delta.microseconds * 1e6) + delta.seconds + (delta.days * 86400)
@@ -25,7 +27,7 @@ def timestamp_to_datetime(timestamp, epoch=EPOCH):
     return date
 
 
-# untits: 's' - storage, 'n' - network
+# units: 's' - storage, 'n' - network
 def convert_size(size_bytes, units='s'):
     if size_bytes == 0:
         return "0B"
@@ -39,11 +41,11 @@ def convert_size(size_bytes, units='s'):
     return "{} {}".format(s, size_name[i])
 
 
-def messageConstr(status, message):
+def message_constructor(status, message):
     return {'status': status, 'message': message}
 
 
-def getSessionId():
+def get_session_id():
     sessionid_request = get(cfg.url,
                             auth=(cfg.username, cfg.password),
                             verify=cfg.verify)
@@ -51,7 +53,7 @@ def getSessionId():
 
 
 def constructor(method):
-        headers = {'X-Transmission-Session-Id': getSessionId()}
+        headers = {'X-Transmission-Session-Id': get_session_id()}
         request = post(cfg.url,
                        data=dumps(method),
                        headers=headers,
@@ -61,7 +63,7 @@ def constructor(method):
                         else request.text
 
 
-def addByMagnetlink(mglink):
+def add_by_magnetlink(mglink):
     names = []
     trackers = []
     try:
@@ -79,17 +81,17 @@ def addByMagnetlink(mglink):
                   'filename': mglink}}
         result = constructor(method)
         if result:
-            return messageConstr(True, cs.ok.format(nameStr,
-                                                    trackersStr))
+            return message_constructor(True, cs.ok.format(nameStr,
+                                                          trackersStr))
         else:
             message = 'Magnet Link: {}\nAnswer: {}'.format(mglink,
                                                            result.text)
-            return messageConstr(False, message)
+            return message_constructor(False, message)
     except Exception as e:
-        return messageConstr(False, 'Bad Error!  {}'.format(e))
+        return message_constructor(False, 'Bad Error!  {}'.format(e))
 
 
-def getStatus():
+def get_status():
     method = {'method': 'session-stats'}
     result = constructor(method)
     if result:
@@ -101,64 +103,64 @@ def getStatus():
                                     convert_size(dumped['uploadSpeed'], 'n'),
                                     convert_size(dumped['cumulative-stats']['uploadedBytes'], 's'),
                                     convert_size(dumped['cumulative-stats']['downloadedBytes'], 's'))
-        return messageConstr(True, fStr)
+        return message_constructor(True, fStr)
     else:
-        return messageConstr(False, 'Error on Getting Torrents')
+        return message_constructor(False, 'Error on Getting Torrents')
 
 
-def startAll():
+def start_all():
     method = {'method': 'torrent-start', 'arguments': {}}
     result = constructor(method)
     if result:
-        return messageConstr(True, 'Started')
+        return message_constructor(True, 'Started')
     else:
-        return messageConstr(False, 'Error on Getting Torrents')
+        return message_constructor(False, 'Error on Getting Torrents')
 
 
-def startById(id):
+def start_by_id(torr_id):
     method = {'method': 'torrent-start', 'arguments': {
-        'ids': int(id)
+        'ids': int(torr_id)
     }}
     result = constructor(method)
     if result:
-        return messageConstr(True, 'Started')
+        return message_constructor(True, 'Started')
     else:
-        return messageConstr(False, 'Error on Getting Torrents')
+        return message_constructor(False, 'Error on Getting Torrents')
 
 
-def stopAll():
+def stop_all():
     method = {'method': 'torrent-stop', 'arguments': {}}
     result = constructor(method)
     if result:
-        return messageConstr(True, 'Stoped')
+        return message_constructor(True, 'Stoped')
     else:
-        return messageConstr(False, 'Error on Getting Torrents')
+        return message_constructor(False, 'Error on Getting Torrents')
 
 
-def stopById(id):
+def stop_by_id(torr_id):
     method = {'method': 'torrent-stop', 'arguments': {
-        'ids': int(id)
+        'ids': int(torr_id)
     }}
     result = constructor(method)
     if result:
-        return messageConstr(True, 'Stoped')
+        return message_constructor(True, 'Stoped')
     else:
-        return messageConstr(False, 'Error on Getting Torrents')
+        return message_constructor(False, 'Error on Getting Torrents')
 
 
-def deleteById(id):
+def delete_by_id(torr_id):
     method = {'method': 'torrent-remove', 'arguments': {
-        'ids': int(id)
+        'ids': int(torr_id)
     }}
     result = constructor(method)
     if result:
-        return messageConstr(True, 'Deleted')
+        return message_constructor(True, 'Deleted')
     else:
-        return messageConstr(False, 'Error on Getting Torrents')
+        return message_constructor(False, 'Error on Getting Torrents')
 
 
 # TODO: Check if i don't have a torrents
-def recentlyAct():
+def get_all_torrents():
     method = {
                 'arguments': {
                     'fields': ['id', 'name', 'status']
@@ -168,43 +170,43 @@ def recentlyAct():
     result = constructor(method)
     if result:
         tmp = loads(result)['arguments']['torrents']
-        ress = ''
+        response = ''
         for i in tmp:
             if i['status'] == 0:
                 status = 'Torrent is stopped'
-                menu = STOPED
+                menu = cs.stop
             elif i['status'] == 1:
                 status = 'Queued to check files'
-                menu = STARTED
+                menu = cs.start
             elif i['status'] == 2:
                 status = 'Checking files'
-                menu = STARTED
+                menu = cs.start
             elif i['status'] == 3:
                 status = 'Queued to download'
-                menu = STARTED
+                menu = cs.start
             elif i['status'] == 4:
                 status = 'Downloading'
-                menu = STARTED
+                menu = cs.start
             elif i['status'] == 5:
                 status = 'Queued to seed'
-                menu = STARTED
-            elif i['status'] == 6:
+                menu = cs.start
+            else:
                 status = 'Seeding'
-                menu = STARTED
-            ress += cs.getLastAct.format(i['id'], i['name'], status, menu.format(i['id']))
-        return messageConstr(True, ress)
+                menu = cs.start
+            response += cs.getLastAct.format(i['id'], i['name'], status, menu.format(i['id']))
+        return message_constructor(True, response)
     else:
-        return messageConstr(False, 'Error on Getting Torrents')
+        return message_constructor(False, 'Error on Getting Torrents')
 
 
-def torrInfo(id):
+def torrent_info(torr_id):
     print(id)
     method = {
                 'arguments': {
                     'fields': ['id', 'name', 'status',
                                'addedDate', 'peers', 'totalSize',
                                'rateDownload', 'rateUpload', 'uploadRatio'],
-                    'ids': int(id)
+                    'ids': int(torr_id)
                   },
                 'method': 'torrent-get'
              }
@@ -214,37 +216,37 @@ def torrInfo(id):
         if tmp['status'] == 0:
             icon = '⏹️'
             status = 'Torrent is stopped'
-            menu = STOPED
+            menu = cs.stop
         elif tmp['status'] == 1:
             icon = '⏯️'
             status = 'Queued to check files'
-            menu = STARTED
+            menu = cs.start
         elif tmp['status'] == 2:
             icon = '▶️'
             status = 'Checking files'
-            menu = STARTED
+            menu = cs.start
         elif tmp['status'] == 3:
             icon = '⏯️'
             status = 'Queued to download'
-            menu = STARTED
+            menu = cs.start
         elif tmp['status'] == 4:
             icon = '▶️'
             status = 'Downloading'
-            menu = STARTED
+            menu = cs.start
         elif tmp['status'] == 5:
             icon = '⏯️'
             status = 'Queued to seed'
-            menu = STARTED
-        elif tmp['status'] == 6:
+            menu = cs.start
+        else:
             icon = '▶️'
             status = 'Seeding'
-            menu = STARTED
-        ress = cs.getTorrInfo.format(icon, tmp['name'], status, menu.format(tmp['id']),
-                                     convert_size(tmp['rateDownload'], 'n'),
-                                     convert_size(tmp['rateUpload'], 'n'),
-                                     len(tmp['peers']),
-                                     convert_size(tmp['totalSize'], 's'),
-                                     timestamp_to_datetime(tmp['addedDate']))
-        return messageConstr(True, ress)
+            menu = cs.start
+        response = cs.getTorrInfo.format(icon, tmp['name'], status, menu.format(tmp['id']),
+                                         convert_size(tmp['rateDownload'], 'n'),
+                                         convert_size(tmp['rateUpload'], 'n'),
+                                         len(tmp['peers']),
+                                         convert_size(tmp['totalSize'], 's'),
+                                         timestamp_to_datetime(tmp['addedDate']))
+        return message_constructor(True, response)
     else:
-        return messageConstr(False, 'Error on Getting Torrent')
+        return message_constructor(False, 'Error on Getting Torrent')

@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 
 
 def log(message, answer):
@@ -9,4 +9,4 @@ def log(message, answer):
     [x] Answer: {2}
  ++++++++"""
     print(text.format(message.chat.username, message.text,
-                      answer, datetime.now()))
+                      answer, datetime.datetime.now()))
