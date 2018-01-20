@@ -1,9 +1,9 @@
 # _*_ coding: utf-8 _*_
-import telebot
 import time
+import telebot
 
 from utils.logger import log
-from utils.router import parse
+from utils.router import parse, parse_callback
 import interface.strings as cs
 from interface.keyboards import server_kbd, torr_kbd
 import config as cfg
@@ -22,9 +22,8 @@ def send_welcome(message):
     log(message, cs.helpText)
     bot.reply_to(message, cs.helpText)
 
-
 @bot.message_handler(content_types=['text'])
-def echo_all(message):
+def txt_queries(message):
     bot.send_chat_action(message.chat.id, 'upload_document')
     reply = parse(message.text)
     if not reply['status']:
@@ -33,11 +32,14 @@ def echo_all(message):
         bot.send_video(message.chat.id, errVideo)
     else:
         log(message, reply)
-        bot.send_message(message.chat.id, reply['message'], parse_mode="html")
+        if (reply['keyboard']):
+            bot.send_message(message.chat.id, reply['message'], parse_mode="html", reply_markup=reply['keyboard'])
+        else:
+            bot.send_message(message.chat.id, reply['message'], parse_mode="html")
 
 
 @bot.message_handler(content_types=['document'])
-def echo_all(message):
+def get_torr_file(message):
     name = message.document.file_name
     try:
         ext = name.split(".")[1]
@@ -56,12 +58,26 @@ def echo_all(message):
             bot.send_message(message.chat.id, 'It\'s not torrent file!')
             bot.send_video(message.chat.id, errVideo)
     except Exception as e:
-            log(message, 'Error!')
-            bot.send_message(message.chat.id,
-                             'Some Error ( ⚆ _ ⚆ ) {}'.format(e),
-                             parse_mode="html")
-            bot.send_video(message.chat.id, errVideo)
+        log(message, 'Error!')
+        bot.send_message(message.chat.id,
+                         'Some Error ( ⚆ _ ⚆ ) {}'.format(e),
+                         parse_mode="html")
+        bot.send_video(message.chat.id, errVideo)
 
+
+@bot.callback_query_handler(func=lambda call: True)
+def callback_inline(call):
+    if call.message:
+        reply = parse_callback(call.data)
+        if not reply['status']:
+            log(call, 'Error!')
+            bot.send_message(call.message.chat.id, reply['message'])
+            bot.send_video(call.message.chat.id, errVideo)
+        else:
+            if (reply['keyboard']):
+                bot.send_message(call.message.chat.id, reply['message'], parse_mode="html", reply_markup=reply['keyboard'])
+            else:
+                bot.send_message(call.message.chat.id, reply['message'], parse_mode="html")
 
 def main_loop():
     bot.polling(True)

@@ -61,3 +61,15 @@ def parse(message):
     except ValueError as err:
         return {'status': True,
                 'message': f'Error in Query:{err}'}
+
+
+def parse_callback(data):
+    if 'stop_' in data:
+        torr_id = data.split('_')[1]
+        return torr.stop_by_id(torr_id)
+    elif 'start_' in data:
+        torr_id = data.split('_')[1]
+        return torr.start_by_id(torr_id)
+    elif 'delete_' in data:
+        torr_id = data.split('_')[1]
+        return torr.delete_by_id(torr_id)

@@ -1,10 +1,14 @@
+"""
+Module for control transmission daemon thru rpc
+"""
+import sys
+import math
+import datetime
 from urllib.parse import unquote
 from json import loads, dumps
 from requests import get, post
-import math
-import datetime
-import sys
 
+from interface.keyboards import inline_kbd
 import interface.strings as cs
 import config as cfg
 
@@ -41,8 +45,10 @@ def convert_size(size_bytes, units='s'):
     return "{} {}".format(s, size_name[i])
 
 
-def message_constructor(status, message):
-    return {'status': status, 'message': message}
+def message_constructor(status, message, keyboard=False):
+    return {'status': status, 
+            'message': message,
+            'keyboard': keyboard}
 
 
 def get_session_id():
@@ -171,29 +177,32 @@ def get_all_torrents():
     if result:
         tmp = loads(result)['arguments']['torrents']
         response = ''
-        for i in tmp:
-            if i['status'] == 0:
-                status = 'Torrent is stopped'
-                menu = cs.stop
-            elif i['status'] == 1:
-                status = 'Queued to check files'
-                menu = cs.start
-            elif i['status'] == 2:
-                status = 'Checking files'
-                menu = cs.start
-            elif i['status'] == 3:
-                status = 'Queued to download'
-                menu = cs.start
-            elif i['status'] == 4:
-                status = 'Downloading'
-                menu = cs.start
-            elif i['status'] == 5:
-                status = 'Queued to seed'
-                menu = cs.start
-            else:
-                status = 'Seeding'
-                menu = cs.start
-            response += cs.getLastAct.format(i['id'], i['name'], status, menu.format(i['id']))
+        if tmp:
+            for i in tmp:
+                if i['status'] == 0:
+                    status = 'Torrent is stopped'
+                    menu = cs.stop
+                elif i['status'] == 1:
+                    status = 'Queued to check files'
+                    menu = cs.start
+                elif i['status'] == 2:
+                    status = 'Checking files'
+                    menu = cs.start
+                elif i['status'] == 3:
+                    status = 'Queued to download'
+                    menu = cs.start
+                elif i['status'] == 4:
+                    status = 'Downloading'
+                    menu = cs.start
+                elif i['status'] == 5:
+                    status = 'Queued to seed'
+                    menu = cs.start
+                else:
+                    status = 'Seeding'
+                    menu = cs.start
+                response += cs.getLastAct.format(i['id'], i['name'], status, menu.format(i['id']))
+        else:
+            response = 'No Active Torrents'
         return message_constructor(True, response)
     else:
         return message_constructor(False, 'Error on Getting Torrents')
@@ -216,37 +225,37 @@ def torrent_info(torr_id):
         if tmp['status'] == 0:
             icon = '⏹️'
             status = 'Torrent is stopped'
-            menu = cs.stop
+            menu = inline_kbd(tmp['id'], 'stopped')
         elif tmp['status'] == 1:
             icon = '⏯️'
             status = 'Queued to check files'
-            menu = cs.start
+            menu = inline_kbd(tmp['id'], 'stated')
         elif tmp['status'] == 2:
             icon = '▶️'
             status = 'Checking files'
-            menu = cs.start
+            menu = inline_kbd(tmp['id'], 'stated')
         elif tmp['status'] == 3:
             icon = '⏯️'
             status = 'Queued to download'
-            menu = cs.start
+            menu = inline_kbd(tmp['id'], 'stated')
         elif tmp['status'] == 4:
             icon = '▶️'
             status = 'Downloading'
-            menu = cs.start
+            menu = inline_kbd(tmp['id'], 'stated')
         elif tmp['status'] == 5:
             icon = '⏯️'
             status = 'Queued to seed'
-            menu = cs.start
+            menu = inline_kbd(tmp['id'], 'stated')
         else:
             icon = '▶️'
             status = 'Seeding'
-            menu = cs.start
-        response = cs.getTorrInfo.format(icon, tmp['name'], status, menu.format(tmp['id']),
+            menu = inline_kbd(tmp['id'], 'stated')
+        response = cs.getTorrInfo.format(icon, tmp['name'], status, '',
                                          convert_size(tmp['rateDownload'], 'n'),
                                          convert_size(tmp['rateUpload'], 'n'),
                                          len(tmp['peers']),
                                          convert_size(tmp['totalSize'], 's'),
                                          timestamp_to_datetime(tmp['addedDate']))
-        return message_constructor(True, response)
+        return message_constructor(True, response, menu)
     else:
         return message_constructor(False, 'Error on Getting Torrent')

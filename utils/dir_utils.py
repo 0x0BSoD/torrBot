@@ -16,11 +16,13 @@ def get_folder_items():
                 else:
                     files += str(f).split("/")[-1] + '\n'
         return {'status': True,
-                'message': dirs + files
+                'message': dirs + files,
+                'keyboard': False
                 }
     except FileNotFoundError as err:
         return {'status': False,
-                'message': err
+                'message': err,
+                'keyboard': False
                 }
 
 
@@ -31,9 +33,11 @@ def fix_rights():
     result = out.decode()
     if p.returncode == 0:
         return {'status': True,
-                'message': '777 👍'
+                'message': '777 👍',
+                'keyboard': False
                 }
     else:
         return {'status': False,
-                'message': f'Some Error, code {result}'
+                'message': f'Some Error, code {result}',
+                'keyboard': False
                 }

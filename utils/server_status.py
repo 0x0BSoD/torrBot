@@ -13,7 +13,8 @@ def sys_health():
         else:
             to_send.append("{0}".format(" ".join(item.split())))
     return {"status": True,
-            "message": "\n".join(to_send)
+            "message": "\n".join(to_send),
+            'keyboard': False
             }
 
 
@@ -22,5 +23,6 @@ def disc_free():
     out = p.communicate()[0]
     result = out.decode()
     return {"status": True,
-            "message": result
+            "message": result,
+            'keyboard': False
             }
