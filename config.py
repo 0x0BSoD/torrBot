@@ -1,11 +1,23 @@
-token = "You_Telegram_Bot_Token"
-partition = "Partition_For_DF"
+# Bot configuration
+TOKEN = YOU_TOKEN
+WEBHOOK_HOST = 'example.com/telegram'
+WEBHOOK_PORT = 443
+WEBHOOK_LISTEN = '0.0.0.0'
+WEBHOOK_URL_BASE = f'https://{WEBHOOK_HOST}'
+WEBHOOK_URL_PATH = f'/{TOKEN}/'
+
+# Host config
 verify = False
-# dirs
-downloadsDir = "Downloads dir"
-torrentsDir = "watch dir for transmission daemon"
-sensorsTarget = ["sensors"]
+partition = PARTIOION FOR FREE SPACE CONFTROL
+downloadsDir = YOU_DIR 
+torrentsDir = YOU_DIR
+sensorsTarget = COMMAND FOR SHOW CPU STATUS
+
 # for transmission
-url = "http[s]://yor_ip:9091/transmission/rpc"
-username = "username"
-password = "password"
+url = TRANSMISSION_RPC_URL
+username = TRANSMISSION_USER
+password = TRANSMISSION_PASS
+
+# telegram
+# TODO: Make more or less setting automatic this parameter
+tg_chat = CHAT_ID_FOR_SENDING_MESSAGES 
